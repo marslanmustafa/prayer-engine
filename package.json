@@ -32,7 +32,10 @@
     "react-native",
     "nextjs"
   ],
-  "author": "Muhammad Arslan Mustafa",
+  "author": {
+    "name": "Muhammad Arslan Mustafa",
+    "url": "https://marslanmustafa.com"
+  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/marslanmustafa/prayer-engine.git"

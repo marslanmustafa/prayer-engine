@@ -28,6 +28,7 @@
   - [Node.js Backend / Cron](#nodejs-backend--cron)
 - [Interactive Web Playground](#interactive-web-playground)
 - [API Reference](#api-reference)
+- [Author](#author)
 - [License](#license)
 
 ---
@@ -429,6 +430,14 @@ The project is pre-configured with `vercel.json` for 1-click deployment:
 
 ---
 
+## Author
+
+Developed with dedication by **Muhammad Arslan Mustafa**:
+* **Website:** [marslanmustafa.com](https://marslanmustafa.com)
+* **GitHub:** [@marslanmustafa](https://github.com/marslanmustafa)
+
+---
+
 ## License
 
-MIT License &copy; [Arslan Mustafa](https://github.com/marslanmustafa)
+MIT License &copy; [Muhammad Arslan Mustafa](https://marslanmustafa.com)

@@ -912,7 +912,7 @@ footer {
   </div>
 
   <footer>
-    <strong>@marslanmustafa/prayer-engine</strong> &bull; MIT License &bull; Universal Multi-School Support
+    <strong>@marslanmustafa/prayer-engine</strong> &bull; Developed by <a href="https://marslanmustafa.com" target="_blank" rel="noopener" style="color:var(--primary);text-decoration:none;font-weight:600;">Muhammad Arslan Mustafa</a> &bull; MIT License
   </footer>
 </div>
 
