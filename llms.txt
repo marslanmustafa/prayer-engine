@@ -1,0 +1,29 @@
+# @marslanmustafa/prayer-engine
+
+> Universal Islamic prayer times, Dahwa-e-Kubra, Qibla compass, and Hijri moon-sighting engine for JavaScript, TypeScript, React Native, Next.js, and Node.js.
+
+## Documentation Index
+
+- [Overview & Quick Start](https://github.com/marslanmustafa/prayer-engine#quick-start-guide): 30-second setup and calculation.
+- [Dahwa-e-Kubra & Makrooh Midday](https://github.com/marslanmustafa/prayer-engine#1-dahwa-e-kubra-ضحوہ-کبری-and-makrooh-midday-zawaal): Islamic midday midpoint and prohibited Zawaal window.
+- [Precautionary Ihtiat Adjustments](https://github.com/marslanmustafa/prayer-engine#3-precautionary-adjustments-ihtiat--احتیاط): Safety margins for Sehri and Iftar.
+- [Elevation Horizon Dip Correction](https://github.com/marslanmustafa/prayer-engine#4-elevation-horizon-dip-correction-بلندی--ارتفاع): Altitude-based astronomical sunrise/sunset adjustments.
+- [Hijri Moon-Sighting Engine](https://github.com/marslanmustafa/prayer-engine#hijri-moon-sighting-engine): Ruet-e-Hilal offsets (-2 to +2 days) and multilingual dates.
+- [Qibla Direction](https://github.com/marslanmustafa/prayer-engine#qibla-direction): Great-circle compass bearing to the Holy Kaaba.
+- [Next.js App Router Integration](https://github.com/marslanmustafa/prayer-engine#nextjs-app-router): Server components and API routes.
+- [React Native & Expo Integration](https://github.com/marslanmustafa/prayer-engine#react-native--expo): Mobile GPS location integration.
+- [Complete API Reference](https://github.com/marslanmustafa/prayer-engine#api-reference): Detailed TypeScript types, parameter options, and return schema.
+
+## Key APIs
+
+### `getPrayerTimes(coords, date?, options?)`
+Calculates: `fajr`, `sunrise`, `ishraq`, `dahwaKubra`, `makroohMidday` (`{ start, end }`), `dhuhr`, `asr`, `sunset`, `maghrib`, `isha`, `midnight`, `tahajjud`, `currentPrayer`, `nextPrayer`, `qibla`, `elevationShift`, `adjustments`.
+
+### `getHijriDate(date?, options?)`
+Calculates: `day`, `month` (`{ number, en, ur, ar }`), `year`, `dayOfWeek`, `formatted` (`{ en, ur, ar }`), `adjustment`, `isGyarweenSharif`, `events`.
+
+### `getElevationShift(lat, date, elevationMeters)`
+Computes horizon dip shift in seconds applied to sunrise (earlier) and sunset (later).
+
+### `Qibla(coords)`
+Computes great-circle compass bearing in degrees to Makkah.

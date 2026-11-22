@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://prayer-engine.vercel.app/sitemap.xml

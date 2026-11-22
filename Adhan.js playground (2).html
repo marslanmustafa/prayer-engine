@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Adhan.js playground</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🕌</text></svg>">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Newsreader:opsz,wght@6..72,500;6..72,700&family=Hanken+Grotesk:wght@400;600&display=swap">
+<style>
+:root{--bg:#F3F1EA;--panel:#FBFAF6;--ink:#17261F;--mute:#5F6E65;--line:#DAD6C7;--accent:#14532D;--gold:#9A6B1E;--hl:#E4EFE6;
+--serif:'Newsreader',Georgia,serif;--sans:'Hanken Grotesk',system-ui,sans-serif;box-sizing:border-box;
+padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0B1512;--panel:#12201B;--ink:#EAF2EE;--mute:#8FA79B;--line:#24392F;--accent:#2FB58C;--gold:#E3B552;--hl:#183228}}
+:root[data-theme="dark"]{--bg:#0B1512;--panel:#12201B;--ink:#EAF2EE;--mute:#8FA79B;--line:#24392F;--accent:#2FB58C;--gold:#E3B552;--hl:#183228}
+*,*::before,*::after{box-sizing:inherit}
+html{color-scheme:light dark}
+body{margin:0;background:var(--bg);color:var(--ink);font:400 15px/1.5 var(--sans)}
+main{max-width:980px;margin:0 auto;padding:24px 18px 48px}
+h1{font:700 30px/1.15 var(--serif);margin:0 0 4px}
+.sub{color:var(--mute);margin:0 0 22px;max-width:60ch}
+.grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.1fr);gap:18px}
+@media (max-width:760px){.grid{grid-template-columns:1fr}}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:16px}
+.panel h2{font:700 18px var(--serif);margin:0 0 12px}
+label{display:block;font-weight:600;font-size:13px;margin:10px 0 4px}
+input,select{width:100%;padding:9px 10px;border:1px solid var(--line);border-radius:9px;background:var(--bg);color:var(--ink);font:inherit}
+input:focus-visible,select:focus-visible,button:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
+.row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.offs{display:grid;grid-template-columns:repeat(5,1fr);gap:6px}
+.offs span{font-size:12px;color:var(--mute);display:block;margin-bottom:2px}
+table{width:100%;border-collapse:collapse}
+td{padding:10px 4px;border-bottom:1px solid var(--line)}
+td:last-child{text-align:right;font:700 20px var(--serif);font-variant-numeric:tabular-nums}
+tr.next{background:var(--hl)}
+tr.next td:first-child{font-weight:700;color:var(--accent);padding-left:10px}
+.next-box{display:flex;justify-content:space-between;align-items:baseline;gap:8px;margin-bottom:10px;flex-wrap:wrap}
+.cd{font:700 26px var(--serif);color:var(--gold);font-variant-numeric:tabular-nums}
+.note{color:var(--mute);font-size:13px;margin:10px 0 0}
+pre{margin:0;overflow-x:auto;background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:12px;font:13px/1.5 ui-monospace,Menlo,monospace;white-space:pre}
+.bar{display:flex;gap:8px;margin-top:10px}
+button{border:1px solid var(--accent);background:var(--accent);color:#fff;padding:8px 14px;border-radius:9px;font:600 14px var(--sans);cursor:pointer}
+button.ghost{background:transparent;color:var(--accent)}
+.err{color:#B3261E;font-weight:600}
+</style>
+</head>
+<body>
+<main>
+<h1>Adhan.js playground</h1>
+<p class="sub">Change the location, method or Asr school and see the five prayer times and the code that produces them. Calculated in your browser with adhan 4.4.6.</p>
+<div class="grid">
+<section class="panel" aria-label="Settings">
+<h2>Settings</h2>
+<label for="city">City</label>
+<select id="city"></select>
+<div class="bar"><button type="button" class="ghost" id="loc">Use my location</button></div>
+<div class="row">
+<div><label for="lat">Latitude</label><input id="lat" type="number" step="0.0001"></div>
+<div><label for="lng">Longitude</label><input id="lng" type="number" step="0.0001"></div>
+</div>
+<div class="row">
+<div><label for="date">Date</label><input id="date" type="date"></div>
+<div><label for="tz">Show times in</label><select id="tz"></select></div>
+</div>
+<div class="row">
+<div><label for="method">Method</label><select id="method"></select></div>
+<div><label for="madhab">Asr</label><select id="madhab"><option value="Hanafi">Hanafi (later)</option><option value="Shafi">Standard (earlier)</option></select></div>
+</div>
+<div class="row" id="custom" hidden>
+<div><label for="fa">Fajr angle (°)</label><input id="fa" type="number" step="0.1" value="18"></div>
+<div><label for="ia">Isha angle (°)</label><input id="ia" type="number" step="0.1" value="18"></div>
+</div>
+<label for="hl">High-latitude rule</label>
+<select id="hl"><option value="auto">Automatic for this latitude</option><option value="MiddleOfTheNight">Middle of the night</option><option value="SeventhOfTheNight">Seventh of the night</option><option value="TwilightAngle">Twilight angle</option></select>
+<div class="row">
+<div><label for="elev">Elevation (m)</label><input id="elev" type="number" step="10" min="0" value="0"></div>
+<div><label for="rnd">Precision</label><select id="rnd"><option value="Nearest">Minutes</option><option value="None">Seconds</option></select></div>
+</div>
+<div class="row">
+<div><label for="dm">Dhuhr margin</label><select id="dm"><option value="method">Method default (+1 min)</option><option value="none">None (raw noon)</option></select></div>
+<div><label for="cdm">Countdown to</label><select id="cdm"><option value="start">Start of next prayer</option><option value="end">End of current prayer</option></select></div>
+</div>
+<div class="bar"><button type="button" class="ghost" id="dei">Use Dawat-e-Islami style</button></div>
+<label>Adjustments (minutes)</label>
+<div class="offs" id="offs"></div>
+</section>
+<div>
+<section class="panel" aria-live="polite">
+<h2>Prayer times</h2>
+<div class="next-box"><span id="nextName"></span><span class="cd" id="cd"></span></div>
+<table id="tbl"></table>
+<p class="note" id="msg"></p>
+</section>
+<section class="panel" style="margin-top:18px">
+<h2>Code</h2>
+<pre id="code"></pre>
+<div class="bar"><button id="copy">Copy code</button><button class="ghost" id="theme">Switch theme</button></div>
+</section>
+</div>
+</div>
+</main>
+<script src="https://cdn.jsdelivr.net/npm/adhan@4.4.6/lib/bundles/adhan.umd.min.js"></script>
+<script>
+(function(){
+var $=function(i){return document.getElementById(i)};
+if(!window.adhan){$('msg').innerHTML='<span class="err">The adhan library didn’t load. Check your connection and reload.</span>';return}
+var A=window.adhan;
+var CITIES=[['Lahore',31.5204,74.3587,'Asia/Karachi'],['Karachi',24.8607,67.0011,'Asia/Karachi'],['Islamabad',33.6844,73.0479,'Asia/Karachi'],['Peshawar',34.0151,71.5249,'Asia/Karachi'],['Quetta',30.1798,66.975,'Asia/Karachi'],['Multan',30.1575,71.5249,'Asia/Karachi'],['Makkah',21.3891,39.8579,'Asia/Riyadh'],['London (high latitude)',51.5074,-0.1278,'Europe/London'],['Helsinki (high latitude)',60.1699,24.9384,'Europe/Helsinki'],['Custom',null,null,null]];
+var METHODS=[['Karachi','Karachi (Pakistan)'],['MuslimWorldLeague','Muslim World League'],['Egyptian','Egyptian'],['UmmAlQura','Umm al-Qura'],['NorthAmerica','ISNA (North America)'],['MoonsightingCommittee','Moonsighting Committee'],['Turkey','Turkey'],['Other','Custom angles']];
+var TZS=['Asia/Karachi','Asia/Riyadh','Europe/London','Europe/Helsinki','UTC'];
+var P=['fajr','dhuhr','asr','maghrib','isha'],LBL={fajr:'Fajr',sunrise:'Sunrise',dhuhr:'Dhuhr',asr:'Asr',maghrib:'Maghrib',isha:'Isha'};
+CITIES.forEach(function(c,i){$('city').add(new Option(c[0],i))});
+METHODS.forEach(function(m){$('method').add(new Option(m[1],m[0]))});
+var dev=Intl.DateTimeFormat().resolvedOptions().timeZone;
+[dev].concat(TZS.filter(function(t){return t!==dev})).forEach(function(t,i){$('tz').add(new Option(i?t:'Your device ('+t+')',t))});
+P.forEach(function(p){var d=document.createElement('div');d.innerHTML='<span>'+LBL[p]+'</span><input type="number" step="1" value="0" id="o_'+p+'" aria-label="'+LBL[p]+' adjustment">';$('offs').appendChild(d)});
+var t=new Date();$('date').value=t.getFullYear()+'-'+String(t.getMonth()+1).padStart(2,'0')+'-'+String(t.getDate()).padStart(2,'0');
+function setCity(){var c=CITIES[$('city').value];if(c[1]!==null){$('lat').value=c[1];$('lng').value=c[2];$('tz').value=c[3]==='Asia/Karachi'||TZS.indexOf(c[3])>-1?c[3]:dev}}
+$('city').value=0;setCity();$('method').value='Karachi';
+var times=null,fmt;
+function build(){
+ var lat=parseFloat($('lat').value),lng=parseFloat($('lng').value);
+ if(isNaN(lat)||isNaN(lng)||Math.abs(lat)>90||Math.abs(lng)>180){$('msg').innerHTML='<span class="err">Enter a latitude between −90 and 90 and a longitude between −180 and 180.</span>';return null}
+ var mk=$('method').value,pr=A.CalculationMethod[mk]();
+ $('custom').hidden=mk!=='Other';
+ if(mk==='Other'){pr.fajrAngle=parseFloat($('fa').value)||0;pr.ishaAngle=parseFloat($('ia').value)||0}
+ pr.madhab=A.Madhab[$('madhab').value];
+ pr.rounding=A.Rounding[$('rnd').value];
+ if($('dm').value==='none')pr.methodAdjustments=Object.assign({},pr.methodAdjustments,{dhuhr:0});
+ var co=new A.Coordinates(lat,lng),hl=$('hl').value;
+ pr.highLatitudeRule=hl==='auto'?A.HighLatitudeRule.recommended(co):A.HighLatitudeRule[hl];
+ P.forEach(function(p){pr.adjustments[p]=parseInt($('o_'+p).value,10)||0});
+ var ds=$('date').value.split('-').map(Number);
+ return {co:co,pr:pr,date:new Date(ds[0],ds[1]-1,ds[2]),mk:mk,lat:lat,lng:lng,elev:Math.max(0,parseFloat($('elev').value)||0)}
+}
+function elevShift(s){
+ if(!s.elev)return 0;
+ var R=Math.PI/180,d0=s.date,N=Math.round((d0-new Date(d0.getFullYear(),0,0))/864e5);
+ var dec=-Math.asin(0.39779*Math.cos(R*(0.98565*(N+10)+1.914*Math.sin(R*0.98565*(N-2)))));
+ var phi=s.lat*R;
+ function H(alt){var c=(Math.sin(-alt*R)-Math.sin(phi)*Math.sin(dec))/(Math.cos(phi)*Math.cos(dec));return Math.abs(c)>1?NaN:Math.acos(c)/R/15*3600}
+ var dt=H(0.8333+0.0293*Math.sqrt(s.elev))-H(0.8333);
+ return isNaN(dt)?0:dt
+}
+function tock(s){
+ s=s||build();if(!s||!times)return;
+ var now=new Date(),same=now.toDateString()===s.date.toDateString(),K=['fajr','sunrise','dhuhr','asr','maghrib','isha'];
+ document.querySelectorAll('#tbl tr').forEach(function(r){r.classList.remove('next')});
+ if(!same){$('nextName').textContent='Pick today’s date to see a countdown';$('cd').textContent='';return}
+ var cur=null,nxt=null,target,label,hl=null;
+ K.forEach(function(k){if(times[k]<=now)cur=k;else if(!nxt)nxt=k});
+ function tomorrowFajr(){return new A.PrayerTimes(s.co,new Date(s.date.getFullYear(),s.date.getMonth(),s.date.getDate()+1),s.pr).fajr}
+ if($('cdm').value==='end'&&cur&&cur!=='sunrise'){
+  var nk=K[K.indexOf(cur)+1];
+  target=nk?times[nk]:tomorrowFajr();
+  label=LBL[cur]+' ends'+(nk?'':' at Fajr');hl=cur
+ }else if(nxt){target=times[nxt];label='Next: '+LBL[nxt];hl=nxt}
+ else{target=tomorrowFajr();label='Next: Fajr (tomorrow)'}
+ var tr=hl&&document.querySelector('#tbl tr[data-k="'+hl+'"]');if(tr)tr.classList.add('next');
+ var d=Math.max(0,Math.floor((target-now)/1000)),h=Math.floor(d/3600),m=Math.floor(d%3600/60),sec=d%60;
+ $('nextName').textContent=label;
+ $('cd').textContent=String(h).padStart(2,'0')+':'+String(m).padStart(2,'0')+':'+String(sec).padStart(2,'0')
+}
+function render(){
+ var s=build();if(!s)return;
+ fmt=new Intl.DateTimeFormat('en-GB',{timeZone:$('tz').value,hour:'2-digit',minute:'2-digit',second:$('rnd').value==='None'?'2-digit':undefined,hour12:false});
+ var raw=new A.PrayerTimes(s.co,s.date,s.pr),sh=elevShift(s);
+ times={fajr:raw.fajr,sunrise:new Date(raw.sunrise.getTime()-sh*1000),dhuhr:raw.dhuhr,asr:raw.asr,maghrib:new Date(raw.maghrib.getTime()+sh*1000),isha:raw.isha};
+ var rows=['fajr','sunrise','dhuhr','asr','maghrib','isha'].map(function(k){return '<tr data-k="'+k+'"><td>'+LBL[k]+'</td><td>'+fmt.format(times[k])+'</td></tr>'}).join('');
+ $('tbl').innerHTML=rows;
+ $('msg').textContent=(sh?'Elevation correction applied: sunrise '+Math.round(sh)+' s earlier, Maghrib '+Math.round(sh)+' s later. ':'')+'Times follow the method you pick. Mosque jamaat times are usually later than these start times.';
+ var mm=$('method').selectedOptions[0].text;
+ $('code').textContent="import { Coordinates, CalculationMethod, PrayerTimes, Madhab"+($('rnd').value==='None'?', Rounding':'')+" } from 'adhan';\n\nconst params = CalculationMethod."+s.mk+"();\n"+(s.mk==='Other'?"params.fajrAngle = "+s.pr.fajrAngle+";\nparams.ishaAngle = "+s.pr.ishaAngle+";\n":"")+($('rnd').value==='None'?"params.rounding = Rounding.None;"+String.fromCharCode(10):"")+($('dm').value==='none'?"params.methodAdjustments.dhuhr = 0;"+String.fromCharCode(10):"")+"params.madhab = Madhab."+$('madhab').value+";\n"+P.filter(function(p){return s.pr.adjustments[p]}).map(function(p){return "params.adjustments."+p+" = "+s.pr.adjustments[p]+";\n"}).join('')+"\nconst times = new PrayerTimes(\n  new Coordinates("+s.lat+", "+s.lng+"),\n  new Date("+s.date.getFullYear()+", "+s.date.getMonth()+", "+s.date.getDate()+"),\n  params\n);\n// times.fajr, times.sunrise, times.dhuhr, times.asr, times.maghrib, times.isha  (JS Date objects)"+(sh?String.fromCharCode(10)+"// Elevation "+s.elev+" m: this page moves sunrise "+Math.round(sh)+" s earlier and Maghrib "+Math.round(sh)+" s later. adhan has no elevation option.":"");
+ tock(s)
+}
+function tick(s){
+ s=s||build();if(!s||!times)return;
+ var now=new Date(),same=now.toDateString()===s.date.toDateString();
+ document.querySelectorAll('#tbl tr').forEach(function(r){r.classList.remove('next')});
+ if(!same){$('nextName').textContent='Pick today’s date to see a countdown';$('cd').textContent='';return}
+ var n=times.nextPrayer(now),target,name;
+ if(n==='none'){var tm=new A.PrayerTimes(s.co,new Date(s.date.getFullYear(),s.date.getMonth(),s.date.getDate()+1),s.pr);target=tm.fajr;name='fajr'}else{target=times.timeForPrayer(n);name=n}
+ var tr=document.querySelector('#tbl tr[data-k="'+name+'"]');if(tr&&n!=='none')tr.classList.add('next');
+ var d=Math.max(0,Math.floor((target-now)/1000)),h=Math.floor(d/3600),m=Math.floor(d%3600/60),sec=d%60;
+ $('nextName').textContent='Next: '+LBL[name]+(n==='none'?' (tomorrow)':'');
+ $('cd').textContent=String(h).padStart(2,'0')+':'+String(m).padStart(2,'0')+':'+String(sec).padStart(2,'0')
+}
+$('city').addEventListener('change',function(){setCity();render()});
+['lat','lng','date','tz','method','madhab','hl','fa','ia','elev','rnd','dm','cdm'].concat(P.map(function(p){return 'o_'+p})).forEach(function(i){$(i).addEventListener('input',function(){if(i==='lat'||i==='lng')$('city').value=CITIES.length-1;render()})});
+$('loc').addEventListener('click',function(){var b=this,msg=$('msg');
+ if(!navigator.geolocation){msg.innerHTML='<span class="err">This browser can’t share location. Enter coordinates by hand.</span>';return}
+ b.textContent='Finding location…';b.disabled=true;
+ navigator.geolocation.getCurrentPosition(function(p){
+  $('lat').value=p.coords.latitude.toFixed(4);$('lng').value=p.coords.longitude.toFixed(4);
+  $('city').value=CITIES.length-1;$('tz').value=dev;b.textContent='Use my location';b.disabled=false;render();
+  msg.textContent='Using your location ('+p.coords.latitude.toFixed(2)+', '+p.coords.longitude.toFixed(2)+'). Times are shown in your device timezone.';
+ },function(e){b.textContent='Use my location';b.disabled=false;
+  msg.innerHTML='<span class="err">'+(e.code===1?'Location permission was denied. Allow it in your browser’s site settings, or pick a city.':'Couldn’t get your location. Pick a city or enter coordinates.')+'</span>'},
+ {enableHighAccuracy:false,timeout:10000,maximumAge:600000})});
+$('copy').addEventListener('click',function(){var b=this;try{navigator.clipboard.writeText($('code').textContent).then(function(){b.textContent='Copied'})}catch(e){b.textContent='Select the code to copy'}setTimeout(function(){b.textContent='Copy code'},1600)});
+$('theme').addEventListener('click',function(){var r=document.documentElement,dark=r.getAttribute('data-theme')?r.getAttribute('data-theme')==='dark':matchMedia('(prefers-color-scheme: dark)').matches;r.setAttribute('data-theme',dark?'light':'dark')});
+$('dei').addEventListener('click',function(){$('method').value='Karachi';$('madhab').value='Hanafi';$('hl').value='auto';$('elev').value=210;$('rnd').value='None';$('dm').value='none';$('cdm').value='end';P.forEach(function(p){$('o_'+p).value=0});render()});
+render();setInterval(function(){tock()},1000);
+})();
+</script>
+</body>
+</html>

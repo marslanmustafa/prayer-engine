@@ -1,0 +1,42 @@
+{
+  "name": "@marslanmustafa/prayer-engine",
+  "version": "1.0.0",
+  "description": "Universal Islamic prayer times, Dahwa-e-Kubra, Qibla compass, and Hijri moon-sighting engine with multi-school support (Hanafi, Shafi'i, Karachi, Umm al-Qura, MWL).",
+  "main": "./dist/index.js",
+  "module": "./dist/index.mjs",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.mjs",
+      "require": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsup src/index.ts --format cjs,esm,iife --global-name PrayerEngine --dts --clean && node scripts/build-page.js",
+    "prepublishOnly": "npm run build"
+  },
+  "keywords": [
+    "prayer-times",
+    "namaz",
+    "hijri",
+    "qibla",
+    "adhan",
+    "salah",
+    "hanafi",
+    "shafi",
+    "react-native",
+    "nextjs"
+  ],
+  "license": "MIT",
+  "dependencies": {
+    "adhan": "^4.4.3"
+  },
+  "devDependencies": {
+    "tsup": "^8.3.0",
+    "typescript": "^5.6.0"
+  }
+}

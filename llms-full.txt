@@ -1,0 +1,247 @@
+# @marslanmustafa/prayer-engine — Full LLM Reference
+
+Universal Islamic prayer times, Dahwa-e-Kubra, Qibla compass, and Hijri moon-sighting engine.
+Zero external runtime dependencies beyond adhan. Fully typed for TypeScript, Next.js, React Native, Vite, and Node.js.
+
+---
+
+## 1. Installation
+
+```bash
+npm install @marslanmustafa/prayer-engine
+```
+
+Package exports:
+- ESM: `dist/index.mjs`
+- CJS: `dist/index.js`
+- Types: `dist/index.d.ts`
+- Standalone IIFE: `dist/index.global.js` (`window.PrayerEngine`)
+
+---
+
+## 2. Core Concepts & Math
+
+### Dahwa-e-Kubra (ضحوہ کبریٰ)
+The Islamic Midday. Defined in Islamic Jurisprudence (Fiqh) as the exact mathematical halfway point between Subh-e-Sadiq (Fajr true dawn) and Maghrib (Sunset):
+Formula:
+`Dahwa-e-Kubra = Fajr + (Maghrib - Fajr) / 2`
+
+Significance:
+1. Legal deadline to make or confirm intention (*Niyyah*) for Ramadan fasts and voluntary fasts.
+2. Marks the beginning of the prohibited midday prayer window (*Zawaal*).
+
+### Makrooh Midday Window (Zawaal / مکروہ وقت)
+The interval between **Dahwa-e-Kubra** and **Dhuhr start**. Voluntary (Nafl) prayers and Sajdah are strictly prohibited during this window.
+
+### Precautionary Adjustments (Ihtiat / احتیاط)
+Traditional calendars apply safety buffer minutes:
+- `fajr`: Typically -2 minutes to guarantee Sehri ends before true dawn.
+- `maghrib`: Typically +2 to +3 minutes to guarantee complete solar sunset before Iftar.
+
+### Elevation Horizon Dip Correction (بلندی کا فرق)
+At elevations above sea level $h$ in meters, the horizon dips:
+`delta_t = H(0.8333 + 0.0293 * sqrt(h)) - H(0.8333) seconds`
+- Sunrise occurs earlier by `delta_t`.
+- Sunset/Maghrib occurs later by `delta_t`.
+
+### Hijri Moon-Sighting Engine
+Supports physical sighting (*Ru'yat-e-Hilal*) with an integer offset `adjustment`: `[-2, -1, 0, +1, +2]` days.
+- English names: Muharram, Safar, Rabi' al-Awwal, Rabi' al-Thani, Jumada al-Awwal, Jumada al-Thani, Rajab, Sha'ban, Ramadan, Shawwal, Dhu al-Qi'dah, Dhu al-Hijjah.
+- Urdu & Arabic month and weekday names included.
+- Gyarween Sharif auto-detected on the 11th of every month (`isGyarweenSharif: true`).
+
+---
+
+## 3. TypeScript Interfaces
+
+```typescript
+export interface CoordinatesInput {
+  latitude: number;
+  longitude: number;
+}
+
+export interface PrayerAdjustments {
+  fajr?: number;
+  sunrise?: number;
+  dhuhr?: number;
+  asr?: number;
+  maghrib?: number;
+  isha?: number;
+}
+
+export interface PrayerCalculationOptions {
+  date?: Date;
+  params?: CalculationParameters;
+  method?:
+    | 'Karachi'
+    | 'MuslimWorldLeague'
+    | 'Egyptian'
+    | 'UmmAlQura'
+    | 'Dubai'
+    | 'MoonsightingCommittee'
+    | 'NorthAmerica'
+    | 'Kuwait'
+    | 'Qatar'
+    | 'Singapore'
+    | 'Tehran'
+    | 'Turkey'
+    | 'Other'
+    | string;
+  madhab?: 'Hanafi' | 'Shafi';
+  elevation?: number; // Elevation in meters
+  rounding?: 'None' | 'Nearest';
+  dhuhrMargin?: 'method' | 'none'; // 'none' = 0 min raw solar noon; 'method' = +1 min
+  highLatitudeRule?: 'auto' | 'MiddleOfTheNight' | 'SeventhOfTheNight' | 'TwilightAngle';
+  fajrAngle?: number;
+  ishaAngle?: number;
+  adjustments?: PrayerAdjustments;
+}
+
+export interface PrayerTimesResult {
+  fajr: Date;
+  sunrise: Date; // adjusted for elevation dip
+  ishraq: Date; // 20m post-sunrise
+  dahwaKubra: Date; // Islamic midday midpoint
+  makroohMidday: {
+    start: Date; // Dahwa-e-Kubra
+    end: Date;   // Dhuhr start
+  };
+  dhuhr: Date;
+  asr: Date; // Hanafi (2x shadow) or Shafi (1x shadow)
+  sunset: Date; // adjusted for elevation dip
+  maghrib: Date; // adjusted for elevation dip
+  isha: Date;
+  midnight: Date; // Islamic night midpoint (Maghrib -> next Fajr)
+  tahajjud: Date; // Last third of night begins
+  currentPrayer: 'none' | 'fajr' | 'sunrise' | 'dhuhr' | 'asr' | 'maghrib' | 'isha';
+  nextPrayer: 'none' | 'fajr' | 'sunrise' | 'dhuhr' | 'asr' | 'maghrib' | 'isha';
+  qibla: number; // Great-circle Kaaba compass bearing in degrees
+  elevation: number;
+  elevationShift: number; // in seconds
+  adjustments: PrayerAdjustments;
+  raw: PrayerTimes;
+}
+
+export interface HijriDateResult {
+  day: number;
+  month: {
+    number: number;
+    en: string;
+    ur: string;
+    ar: string;
+  };
+  year: number;
+  dayOfWeek: {
+    en: string;
+    ur: string;
+    ar: string;
+  };
+  formatted: {
+    en: string;
+    ur: string;
+    ar: string;
+  };
+  adjustment: number;
+  events: Array<{
+    name: string;
+    nameUrdu: string;
+    nameArabic: string;
+    hijriMonth: number;
+    hijriDay: number;
+  }>;
+  isGyarweenSharif: boolean;
+}
+```
+
+---
+
+## 4. Usage Examples
+
+### Standard Usage
+```typescript
+import { getPrayerTimes, getHijriDate } from '@marslanmustafa/prayer-engine';
+
+const coords = { latitude: 31.5204, longitude: 74.3587 }; // Lahore
+const times = getPrayerTimes(coords, new Date(), {
+  madhab: 'Hanafi',
+  elevation: 210,
+  adjustments: { fajr: -2, maghrib: 3 },
+});
+
+console.log('Fajr (Sehri Ends):', times.fajr);
+console.log('Dahwa-e-Kubra:', times.dahwaKubra);
+console.log('Dhuhr:', times.dhuhr);
+console.log('Asr (Hanafi):', times.asr);
+console.log('Maghrib (Iftar):', times.maghrib);
+console.log('Isha:', times.isha);
+console.log('Qibla Compass Bearing:', times.qibla);
+
+const hijri = getHijriDate(new Date(), { adjustment: -1 });
+console.log('Hijri Date:', hijri.formatted.en, '|', hijri.formatted.ur);
+```
+
+### Next.js App Router (Route Handler)
+```typescript
+// app/api/prayers/route.ts
+import { NextResponse } from 'next/server';
+import { getPrayerTimes, getHijriDate } from '@marslanmustafa/prayer-engine';
+
+export async function GET(request: Request) {
+  const { searchParams } = new URL(request.url);
+  const lat = parseFloat(searchParams.get('lat') || '31.5204');
+  const lng = parseFloat(searchParams.get('lng') || '74.3587');
+  const elevation = parseFloat(searchParams.get('elevation') || '210');
+
+  const prayers = getPrayerTimes({ latitude: lat, longitude: lng }, new Date(), {
+    elevation,
+    madhab: 'Hanafi',
+  });
+
+  return NextResponse.json({
+    prayers,
+    hijri: getHijriDate(),
+  });
+}
+```
+
+### React Native & Expo
+```typescript
+import React, { useEffect, useState } from 'react';
+import { View, Text } from 'react-native';
+import * as Location from 'expo-location';
+import { getPrayerTimes, getHijriDate } from '@marslanmustafa/prayer-engine';
+
+export function PrayerTimesScreen() {
+  const [times, setTimes] = useState<any>(null);
+  const [hijri, setHijri] = useState<any>(null);
+
+  useEffect(() => {
+    (async () => {
+      const { status } = await Location.requestForegroundPermissionsAsync();
+      const loc = status === 'granted'
+        ? await Location.getCurrentPositionAsync({})
+        : { coords: { latitude: 24.8607, longitude: 67.0011 } };
+
+      setTimes(getPrayerTimes({
+        latitude: loc.coords.latitude,
+        longitude: loc.coords.longitude,
+      }));
+      setHijri(getHijriDate());
+    })();
+  }, []);
+
+  if (!times) return <Text>Loading...</Text>;
+
+  return (
+    <View style={{ padding: 20 }}>
+      <Text>{hijri?.formatted.ur}</Text>
+      <Text>Fajr: {times.fajr.toLocaleTimeString()}</Text>
+      <Text>Dahwa-e-Kubra: {times.dahwaKubra.toLocaleTimeString()}</Text>
+      <Text>Dhuhr: {times.dhuhr.toLocaleTimeString()}</Text>
+      <Text>Asr: {times.asr.toLocaleTimeString()}</Text>
+      <Text>Maghrib: {times.maghrib.toLocaleTimeString()}</Text>
+      <Text>Isha: {times.isha.toLocaleTimeString()}</Text>
+    </View>
+  );
+}
+```
