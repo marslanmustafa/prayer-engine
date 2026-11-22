@@ -6,6 +6,7 @@
 [![npm version](https://img.shields.io/npm/v/@marslanmustafa/prayer-engine.svg)](https://www.npmjs.com/package/@marslanmustafa/prayer-engine)
 [![License: MIT](https://img.shields.io/badge/License-MIT-emerald.svg)](https://opensource.org/licenses/MIT)
 [![TypeScript](https://img.shields.io/badge/TypeScript-Ready-blue.svg)](https://www.typescriptlang.org/)
+[![Live Demo](https://img.shields.io/badge/Demo-prayer--engine.vercel.app-166534.svg)](https://prayer-engine.vercel.app/)
 
 ---
 
@@ -409,6 +410,24 @@ The project is pre-configured with `vercel.json` for 1-click deployment:
 * `elevationShift`: `number` (seconds shifted)
 * `adjustments`: `PrayerAdjustments`
 * `raw`: `PrayerTimes` (raw underlying Adhan instance)
+
+---
+
+### `getDefaultParameters(options?): CalculationParameters`
+
+Returns pre-configured CalculationParameters initialized to **Karachi** calculation method and **Hanafi** Madhab.
+
+```typescript
+import { getDefaultParameters } from '@marslanmustafa/prayer-engine';
+
+// Standard defaults (Karachi + Hanafi)
+const params = getDefaultParameters();
+
+// With optional custom adjustments
+const paramsWithAdjustments = getDefaultParameters({
+  adjustments: { fajr: -2, maghrib: 2 },
+});
+```
 
 ---
 
