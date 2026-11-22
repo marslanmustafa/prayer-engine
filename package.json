@@ -32,6 +32,15 @@
     "react-native",
     "nextjs"
   ],
+  "author": "Muhammad Arslan Mustafa",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/marslanmustafa/prayer-engine.git"
+  },
+  "bugs": {
+    "url": "https://github.com/marslanmustafa/prayer-engine/issues"
+  },
+  "homepage": "https://prayer-engine.vercel.app",
   "license": "MIT",
   "dependencies": {
     "adhan": "^4.4.3"
