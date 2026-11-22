@@ -16,6 +16,7 @@
     "dist"
   ],
   "scripts": {
+    "dev": "vite",
     "build": "tsup src/index.ts --format cjs,esm,iife --global-name PrayerEngine --dts --clean && node scripts/build-page.js",
     "prepublishOnly": "npm run build"
   },
